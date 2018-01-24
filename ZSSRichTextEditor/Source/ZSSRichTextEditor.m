@@ -23,9 +23,13 @@
  **/
 @interface UIWebView (HackishAccessoryHiding)
 @property (nonatomic, assign) BOOL hidesInputAccessoryView;
+
+
+
 @end
 
 @implementation UIWebView (HackishAccessoryHiding)
+
 
 static const char * const hackishFixClassName = "UIWebBrowserViewMinusAccessoryView";
 static Class hackishFixClass = Nil;
@@ -539,6 +543,7 @@ static CGFloat kDefaultScale = 0.5;
     if ((_enabledToolbarItems && [_enabledToolbarItems containsObject:ZSSRichTextEditorToolbarStrikeThrough]) || (_enabledToolbarItems && [_enabledToolbarItems containsObject:ZSSRichTextEditorToolbarAll])) {
         ZSSBarButtonItem *strikeThrough = [[ZSSBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"ZSSstrikethrough.png" inBundle:bundle compatibleWithTraitCollection:nil] style:UIBarButtonItemStylePlain target:self action:@selector(setStrikethrough)];
         strikeThrough.label = @"strikeThrough";
+        
         if (customOrder) {
             [items replaceObjectAtIndex:[_enabledToolbarItems indexOfObject:ZSSRichTextEditorToolbarStrikeThrough] withObject:strikeThrough];
         } else {
@@ -1075,9 +1080,35 @@ static CGFloat kDefaultScale = 0.5;
     [self.editorView stringByEvaluatingJavaScriptFromString:trigger];
 }
 
+- (ZSSBarButtonItem *)buttonWithLabel: (NSString *)label
+{
+    NSArray *items = self.toolbar.items;
+    for (ZSSBarButtonItem *item in items) {
+        if ([item.label isEqualToString:label]) {
+            return item;
+        }
+    }
+    
+    return nil;
+}
+
 - (void)setUnderline {
     NSString *trigger = @"zss_editor.setUnderline();";
     [self.editorView stringByEvaluatingJavaScriptFromString:trigger];
+    
+    
+    UIColor *finalTintColor;
+    ZSSBarButtonItem *item = [self buttonWithLabel:@"underline"];
+    
+    if (item.tintColor == [self barButtonItemSelectedDefaultColor]) {
+        finalTintColor = [self barButtonItemDefaultColor];
+    } else {
+        finalTintColor = [self barButtonItemSelectedDefaultColor];
+    }
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        item.tintColor = finalTintColor;
+    });
 }
 
 - (void)setSuperscript {
@@ -1088,6 +1119,20 @@ static CGFloat kDefaultScale = 0.5;
 - (void)setStrikethrough {
     NSString *trigger = @"zss_editor.setStrikeThrough();";
     [self.editorView stringByEvaluatingJavaScriptFromString:trigger];
+    
+    
+    UIColor *finalTintColor;
+    ZSSBarButtonItem *item = [self buttonWithLabel:@"strikeThrough"];
+    
+    if (item.tintColor == [self barButtonItemSelectedDefaultColor]) {
+        finalTintColor = [self barButtonItemDefaultColor];
+    } else {
+        finalTintColor = [self barButtonItemSelectedDefaultColor];
+    }
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        item.tintColor = finalTintColor;
+    });
 }
 
 - (void)setUnorderedList {
@@ -1623,6 +1668,8 @@ static CGFloat kDefaultScale = 0.5;
         }
     }
     
+    
+    
 }
 
 
@@ -2055,7 +2102,8 @@ static CGFloat kDefaultScale = 0.5;
 
 
 - (BOOL)isIpad {
-    return (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad);
+    return YES;
+//    return (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad);
 }
 
 
